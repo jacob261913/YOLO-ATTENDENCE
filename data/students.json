@@ -1,0 +1,47 @@
+[
+    {
+        "student_id": "STU047",
+        "roll_no": "47",
+        "name": "Jacob Roy",
+        "department": "Computer Science",
+        "email": "jacob.47@college.edu",
+        "profile_pic": "/static/profiles/STU047.jpg",
+        "registered_at": "2026-09-19"
+    },
+    {
+        "student_id": "STU066",
+        "roll_no": "66",
+        "name": "Steve Kalacherry",
+        "department": "Computer Science",
+        "email": "steve.66@college.edu",
+        "profile_pic": "/static/profiles/STU066.jpg",
+        "registered_at": "2026-09-19"
+    },
+    {
+        "student_id": "STU048",
+        "roll_no": "48",
+        "name": "Jaidev Krishna",
+        "department": "Computer Science",
+        "email": "jaidev.48@college.edu",
+        "profile_pic": "/static/profiles/STU048.jpg",
+        "registered_at": "2026-09-19"
+    },
+    {
+        "student_id": "STU057",
+        "roll_no": "57",
+        "name": "Nibin",
+        "department": "Computer Science",
+        "email": "nibin.57@college.edu",
+        "profile_pic": "/static/profiles/STU057.jpg",
+        "registered_at": "2026-09-19"
+    },
+    {
+        "student_id": "STU052",
+        "roll_no": "52",
+        "name": "Mathew",
+        "department": "Computer Science",
+        "email": "mathew.52@college.edu",
+        "profile_pic": "/static/profiles/STU052.jpg",
+        "registered_at": "2026-09-19"
+    }
+]

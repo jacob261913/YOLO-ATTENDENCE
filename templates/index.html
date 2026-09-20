@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Face Recognition Attendance Portal</title>
+    <meta name="description" content="Automated Smart Attendance Portal using Deep Learning Face Recognition">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+    <!-- Notification Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <div class="app-container">
+
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-face-smile-beam"></i>
+                </div>
+                <div class="brand-text">
+                    <h2>Vision<span class="highlight">Attend</span></h2>
+                    <p class="subtitle">AI Face Recognition Portal</p>
+                </div>
+            </div>
+
+            <nav class="nav-menu">
+                <button class="nav-btn active" data-tab="tab-scanner">
+                    <i class="fa-solid fa-camera"></i>
+                    <span>Live Scanner</span>
+                </button>
+                <button class="nav-btn" data-tab="tab-attendance">
+                    <i class="fa-solid fa-clipboard-user"></i>
+                    <span>Attendance Records</span>
+                </button>
+                <button class="nav-btn" data-tab="tab-students">
+                    <i class="fa-solid fa-user-graduate"></i>
+                    <span>Student Directory</span>
+                </button>
+                <button class="nav-btn" data-tab="tab-analytics">
+                    <i class="fa-solid fa-chart-pie"></i>
+                    <span>Analytics & Model</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="model-status-chip" id="chip-model-status">
+                    <span class="status-dot green"></span>
+                    <span class="chip-text">AI Model Ready</span>
+                </div>
+                <div class="system-time" id="system-clock">--:--:--</div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            
+            <!-- Top Navbar Bar -->
+            <header class="top-header">
+                <div class="header-title">
+                    <h1 id="page-title">Live AI Scanner</h1>
+                    <p id="page-desc">Position your face in front of the camera to automatically mark attendance.</p>
+                </div>
+
+                <div class="header-actions">
+                    <button class="btn btn-primary" id="btn-quick-register">
+                        <i class="fa-solid fa-user-plus"></i>
+                        <span>Add Student</span>
+                    </button>
+                    <button class="btn btn-secondary" id="btn-trigger-train">
+                        <i class="fa-solid fa-brain"></i>
+                        <span>Retrain Model</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Metrics Quick Bar -->
+            <section class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-icon blue">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                    <div class="metric-info">
+                        <span class="metric-label">Total Registered</span>
+                        <h3 class="metric-value" id="stat-total-students">0</h3>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-icon green">
+                        <i class="fa-solid fa-user-check"></i>
+                    </div>
+                    <div class="metric-info">
+                        <span class="metric-label">Present Today</span>
+                        <h3 class="metric-value" id="stat-present-today">0</h3>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-icon red">
+                        <i class="fa-solid fa-user-xmark"></i>
+                    </div>
+                    <div class="metric-info">
+                        <span class="metric-label">Absent Today</span>
+                        <h3 class="metric-value" id="stat-absent-today">0</h3>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-icon purple">
+                        <i class="fa-solid fa-percent"></i>
+                    </div>
+                    <div class="metric-info">
+                        <span class="metric-label">Attendance Rate</span>
+                        <h3 class="metric-value" id="stat-attendance-rate">0%</h3>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 1: LIVE SCANNER -->
+            <section id="tab-scanner" class="tab-content active">
+                <div class="scanner-layout">
+                    
+                    <!-- Video Frame Container -->
+                    <div class="camera-card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <i class="fa-solid fa-video"></i>
+                                <span>Real-Time Face Recognition Camera</span>
+                            </div>
+                            <div class="mode-toggle">
+                                <button class="btn-mode active" id="mode-webcam">Webcam Stream</button>
+                                <button class="btn-mode" id="mode-upload">Upload Photo</button>
+                            </div>
+                        </div>
+
+                        <div class="camera-view-wrapper">
+                            <!-- Live Video Stream -->
+                            <div id="webcam-container" class="video-container">
+                                <video id="webcam-video" autoplay playsinline muted></video>
+                                <canvas id="overlay-canvas"></canvas>
+                                <div class="camera-scanner-frame">
+                                    <div class="corner top-left"></div>
+                                    <div class="corner top-right"></div>
+                                    <div class="corner bottom-left"></div>
+                                    <div class="corner bottom-right"></div>
+                                </div>
+                                <div class="scanner-laser"></div>
+                            </div>
+
+                            <!-- Photo Upload Container -->
+                            <div id="upload-container" class="upload-container hidden">
+                                <div class="dropzone" id="image-dropzone">
+                                    <i class="fa-solid fa-cloud-arrow-up drop-icon"></i>
+                                    <p class="drop-text">Drag & Drop face photo here or <span>browse</span></p>
+                                    <input type="file" id="upload-input" accept="image/*" class="hidden">
+                                </div>
+                                <div class="upload-preview-wrapper hidden" id="upload-preview-wrapper">
+                                    <img id="upload-preview-img" alt="Uploaded Preview">
+                                    <canvas id="upload-canvas"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="camera-controls">
+                            <button class="btn btn-outline" id="btn-toggle-camera">
+                                <i class="fa-solid fa-video-slash" id="camera-icon"></i>
+                                <span id="camera-btn-text">Pause Camera</span>
+                            </button>
+                            <div class="scanner-status" id="scanner-status">
+                                <span class="status-pulse active"></span>
+                                <span>Scanning active...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recognition Log Feed Sidebar -->
+                    <div class="feed-card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <i class="fa-solid fa-bolt-lightning"></i>
+                                <span>Instant Verification Feed</span>
+                            </div>
+                        </div>
+                        
+                        <div class="recognition-feed" id="recognition-feed">
+                            <div class="feed-placeholder">
+                                <i class="fa-solid fa-expand-wide"></i>
+                                <p>No faces scanned yet. Step in front of the camera to mark attendance.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: ATTENDANCE RECORDS -->
+            <section id="tab-attendance" class="tab-content">
+                <div class="card">
+                    <div class="card-header space-between">
+                        <div class="card-title">
+                            <i class="fa-solid fa-list-check"></i>
+                            <span>Daily Attendance Log</span>
+                        </div>
+                        <div class="table-actions">
+                            <button class="btn btn-success" id="btn-export-csv">
+                                <i class="fa-solid fa-file-csv"></i>
+                                <span>Export CSV</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Filter Bar -->
+                    <div class="filter-toolbar">
+                        <div class="search-box">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="filter-search" placeholder="Search student name or roll number...">
+                        </div>
+
+                        <div class="filter-group">
+                            <label><i class="fa-solid fa-calendar-day"></i> Date:</label>
+                            <select id="filter-date">
+                                <option value="today">Today</option>
+                                <option value="all">All Dates</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label><i class="fa-solid fa-filter"></i> Status:</label>
+                            <select id="filter-status">
+                                <option value="all">All Statuses</option>
+                                <option value="Present">Present</option>
+                                <option value="Late">Late</option>
+                                <option value="Absent">Absent</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Attendance Table -->
+                    <div class="table-responsive">
+                        <table class="data-table" id="attendance-table">
+                            <thead>
+                                <tr>
+                                    <th>Student</th>
+                                    <th>Roll Number</th>
+                                    <th>Department</th>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Status</th>
+                                    <th>Confidence</th>
+                                    <th>Source</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="attendance-tbody">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: STUDENT DIRECTORY -->
+            <section id="tab-students" class="tab-content">
+                <div class="card">
+                    <div class="card-header space-between">
+                        <div class="card-title">
+                            <i class="fa-solid fa-address-book"></i>
+                            <span>Classmates & Student Enrolment</span>
+                        </div>
+                        <button class="btn btn-primary" id="btn-add-student-modal">
+                            <i class="fa-solid fa-user-plus"></i>
+                            <span>Register New Student</span>
+                        </button>
+                    </div>
+
+                    <div class="student-grid" id="student-grid">
+                        <!-- Dynamic Student Cards -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 4: ANALYTICS & MODEL DIAGNOSTICS -->
+            <section id="tab-analytics" class="tab-content">
+                <div class="analytics-layout">
+                    
+                    <!-- Department Breakdown -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <i class="fa-solid fa-chart-column"></i>
+                                <span>Department Attendance Breakdown</span>
+                            </div>
+                        </div>
+                        <div class="dept-stats-list" id="dept-stats-list">
+                            <!-- Dynamic stats bars -->
+                        </div>
+                    </div>
+
+                    <!-- AI Model Health & Retrain -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <i class="fa-solid fa-microchip"></i>
+                                <span>Face Recognition Deep Learning Model</span>
+                            </div>
+                        </div>
+
+                        <div class="model-info-box">
+                            <div class="info-row">
+                                <span class="info-label">Model Architecture:</span>
+                                <span class="info-val">dlib ResNet (128-Dimensional Embeddings)</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Distance Metric:</span>
+                                <span class="info-val">Euclidean Distance (&lt; 0.50 Tolerance)</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Total Trained Encodings:</span>
+                                <span class="info-val" id="model-total-encodings">0</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Last Retrained:</span>
+                                <span class="info-val" id="model-last-trained">N/A</span>
+                            </div>
+
+                            <button class="btn btn-lg btn-secondary" id="btn-full-retrain">
+                                <i class="fa-solid fa-arrows-rotate"></i>
+                                <span>Re-Extract & Train All Encodings</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- REGISTER STUDENT MODAL -->
+    <div class="modal-overlay hidden" id="register-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-user-plus"></i> Register New Classmate</h3>
+                <button class="btn-close" id="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <form id="register-form">
+                <div class="form-group">
+                    <label>Full Name *</label>
+                    <input type="text" id="reg-name" required placeholder="e.g. Jordan Lee">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Roll Number *</label>
+                        <input type="text" id="reg-roll" required placeholder="e.g. CS202606">
+                    </div>
+                    <div class="form-group">
+                        <label>Department *</label>
+                        <select id="reg-dept">
+                            <option value="Computer Science">Computer Science</option>
+                            <option value="Information Technology">Information Technology</option>
+                            <option value="Data Science">Data Science</option>
+                            <option value="Artificial Intelligence">Artificial Intelligence</option>
+                            <option value="Electronics Eng">Electronics Eng</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="reg-email" placeholder="student@university.edu">
+                </div>
+
+                <div class="form-group">
+                    <label>Face Image Photo *</label>
+                    <div class="snap-source-toggle">
+                        <button type="button" class="btn-snap active" id="snap-mode-camera">Use Live Camera</button>
+                        <button type="button" class="btn-snap" id="snap-mode-file">Upload File</button>
+                    </div>
+
+                    <!-- Snap Camera view -->
+                    <div class="snap-box" id="snap-box-camera">
+                        <video id="snap-video" autoplay playsinline muted></video>
+                        <button type="button" class="btn btn-sm btn-primary" id="btn-capture-snapshot">
+                            <i class="fa-solid fa-camera"></i> Capture Face
+                        </button>
+                        <canvas id="snap-canvas" class="hidden"></canvas>
+                    </div>
+
+                    <!-- File input -->
+                    <div class="snap-box hidden" id="snap-box-file">
+                        <input type="file" id="reg-file-input" accept="image/*">
+                    </div>
+
+                    <div class="preview-box hidden" id="reg-preview-box">
+                        <span>Captured Preview:</span>
+                        <img id="reg-preview-img" alt="Captured Face Preview">
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" id="btn-cancel-modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="btn-submit-student">Save & Train Student</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Custom App Script -->
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
